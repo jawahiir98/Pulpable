@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+"# ⚡ Next.js Project Boilerplate
 
-## Getting Started
+This is a modern, full-stack web application built with a powerful tech stack for rapid development and scalability.
 
-First, run the development server:
+## 🧩 Tech Stack
+
+This project uses a **type-safe, scalable full-stack setup**, including:
+
+- **Next.js** – React framework for building web apps
+- **Tailwind CSS** – Utility-first CSS framework
+- **Shadcn UI** – Accessible UI components powered by Radix UI
+- **tRPC** – End-to-end typesafe APIs without needing REST or GraphQL
+- **Prisma ORM** – Next-gen TypeScript ORM for database access
+- **NeonDB** – Serverless PostgreSQL database
+- **Inngest** – Resilient background jobs & workflows
+- **OpenAI** – AI-enhanced features via OpenAI’s API
+
+---
+
+## ⚙️ Getting Started
+
+Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run your project ( 2 steps )
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Run your project 
+```bash 
+npm run dev
+```
+2. Run Inngest development server 
+```bash 
+npx inngest-cli@latest dev 
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+Open http://localhost:3000 to view it in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+🧠 Prisma ORM Setup Guide
+This project uses Prisma as the database toolkit, configured with NeonDB.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Here's a guide based on the current setup (see /prisma folder):🧠 Prisma ORM Setup Guide
+This project uses Prisma as the database toolkit, configured with NeonDB.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Here's a guide based on the current setup (see /prisma folder):
 
-## Deploy on Vercel
+### 1. Initialize Prisma
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```base 
+npx prisma init
+```
+This creates:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+prisma/schema.prisma – your data models go here.
+
+.env – set your DATABASE_URL (e.g., NeonDB).
+Create your account from NeonDB official website. 
+
+### 2. Define Your Schema
+Edit prisma/schema.prisma and define your models.
+
+### 3. Run Your First Migration
+```base 
+npx prisma migrate dev --name db_init
+```
+This:
+
+Creates a migrations/ folder with timestamped folders (as seen in your project).
+
+Applies changes to your local database.
+
+### 4. Push Schema (Optional in Dev)
+```base 
+npx prisma db push
+```
+Use this to sync your schema with the database without creating a new migration.
+
+### 5. Seed the Database
+```base 
+ts-node prisma/seed.ts
+```
+Make sure ts-node is installed (you can use pnpm dlx tsx as an alternative).
+
+# 🧪 tRPC Setup
+tRPC is already wired into the project. To add new routes:
+
+Add procedures to your router files under /server/api
+
+Use api/trpc/[trpc].ts to handle them in Next.js API routes
+
+# ⚙️ Inngest Setup
+Inngest is used for background jobs:
+
+Handlers go in /inngest/ folder
+
+Register functions and use them via inngest.send() in your code
+
+Don’t forget to set your INNGEST_EVENT_KEY in .env.
+Create an Account at - [Inngest Docs](https://www.inngest.com/docs).
+
+# 🧠 Learn More
+
+- [Next.js Docs](https://nextjs.org/docs)
+- [Prisma Docs](https://www.prisma.io/docs)
+- [tRPC Docs](https://trpc.io/docs)
+- [Inngest Docs](https://www.inngest.com/docs)
+- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+- [Shadcn UI Docs](https://ui.shadcn.com)
+
+---
+
+Built with ❤️ by **Jawahiir Nabhan**
