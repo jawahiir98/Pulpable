@@ -1,4 +1,4 @@
-"# ⚡ Next.js Project Boilerplate
+# ⚡ Next.js Project Boilerplate
 
 This is a modern, full-stack web application built with a powerful tech stack for rapid development and scalability.
 
