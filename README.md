@@ -82,7 +82,7 @@ Use this to sync your schema with the database without creating a new migration.
 
 ### 5. Seed the Database
 ```base 
-ts-node prisma/seed.ts
+
 ```
 Make sure ts-node is installed (you can use pnpm dlx tsx as an alternative).
 
