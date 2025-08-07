@@ -1,17 +1,17 @@
 # This is a config for E2B sandbox template.
-# You can use template ID (7uq3bg0szky5kwjwtg43) or template name (pulpable-nextjs-test2) to create a sandbox:
+# You can use template ID (v0gaskiywtvya4qyqulp) or template name (pulpable-nextjs-dev) to create a sandbox:
 
 # Python SDK
 # from e2b import Sandbox, AsyncSandbox
-# sandbox = Sandbox("pulpable-nextjs-test2") # Sync sandbox
-# sandbox = await AsyncSandbox.create("pulpable-nextjs-test2") # Async sandbox
+# sandbox = Sandbox("pulpable-nextjs-dev") # Sync sandbox
+# sandbox = await AsyncSandbox.create("pulpable-nextjs-dev") # Async sandbox
 
 # JS SDK
 # import { Sandbox } from 'e2b'
-# const sandbox = await Sandbox.create('pulpable-nextjs-test2')
+# const sandbox = await Sandbox.create('pulpable-nextjs-dev')
 
 team_id = "30d4dd10-88eb-4ff5-855d-541f0993ad14"
 start_cmd = "/compile_page.sh"
 dockerfile = "e2b.Dockerfile"
-template_name = "pulpable-nextjs-test2"
-template_id = "7uq3bg0szky5kwjwtg43"
+template_name = "pulpable-nextjs-dev"
+template_id = "v0gaskiywtvya4qyqulp"
