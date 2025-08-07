@@ -1,3 +1,4 @@
+import { Sandbox } from '@e2b/code-interpreter';
 import { inngest } from './client';
 import {
   openai,
@@ -32,7 +33,7 @@ export const helloWorld = inngest.createFunction(
           name: 'terminal',
           description: 'User the terminal to run commands',
           parameters: z.object({
-            command: z.string(),
+            command: z.string(),https://github.com/jawahiir98/Pulpable/pull/5/conflict?name=src%252Finngest%252Futils.ts&base_oid=b18b73fb09fbb1126c371b900333d0692fe321af&head_oid=fc24c720aa889084ae8d093954cb9f84756a7e4d
           }),
           handler: async ({ command }, { step }) => {
             return await step?.run('terminal', async () => {
@@ -142,7 +143,6 @@ export const helloWorld = inngest.createFunction(
       const host = sandbox.getHost(3000);
       return `https://${host}`;
     });
-
     return {
       url: sandboxUrl,
       title: 'Fragment',
