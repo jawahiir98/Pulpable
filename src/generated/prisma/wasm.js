@@ -126,7 +126,8 @@ exports.Prisma.MessageScalarFieldEnum = {
   role: 'role',
   type: 'type',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  projectId: 'projectId'
 };
 
 exports.Prisma.FragmentScalarFieldEnum = {
@@ -135,6 +136,13 @@ exports.Prisma.FragmentScalarFieldEnum = {
   sandboxUrl: 'sandboxUrl',
   title: 'title',
   files: 'files',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProjectScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -170,7 +178,8 @@ exports.MessageType = exports.$Enums.MessageType = {
 
 exports.Prisma.ModelName = {
   Message: 'Message',
-  Fragment: 'Fragment'
+  Fragment: 'Fragment',
+  Project: 'Project'
 };
 
 /**
