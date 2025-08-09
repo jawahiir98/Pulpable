@@ -7,6 +7,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
+import { MessagesContainer } from '@/modules/projects/ui/components/messages-container';
 
 interface Props {
   projectId: string;
@@ -25,14 +26,14 @@ export const ProjectView = ({ projectId }: Props) => {
     })
   );
   return (
-    <div>
+    <div className={'h-screen'}>
       <ResizablePanelGroup direction={'horizontal'}>
         <ResizablePanel
           defaultSize={35}
           minSize={20}
           className={'flex flex-col min-h-0'}
         >
-          {JSON.stringify(project)}
+          <MessagesContainer projectId={projectId} />
         </ResizablePanel>
         <ResizableHandle withHandle={true} />
         <ResizablePanel
@@ -40,7 +41,8 @@ export const ProjectView = ({ projectId }: Props) => {
           minSize={50}
           className={'flex flex-col min-h-0'}
         >
-          {JSON.stringify(messages)}
+          todo
+          {/*{JSON.stringify(messages)}*/}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
