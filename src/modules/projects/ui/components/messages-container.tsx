@@ -40,6 +40,10 @@ export const MessagesContainer = ({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
+  const onSelectFragment = (fragment: Fragment | null) => {
+    setActiveFragment(fragment);
+  };
+
   const lastMessage = messages[messages.length - 1];
   const isLastMessageUser = lastMessage.role === 'USER';
 
@@ -56,7 +60,7 @@ export const MessagesContainer = ({
               fragment={message.fragment}
               createdAt={message.createdAt}
               isActiveFragment={activeFragment?.id === message.fragment?.id}
-              onFragmentClick={() => setActiveFragment(message.fragment)}
+              onFragmentClick={() => onSelectFragment(message.fragment)}
             />
           ))}
           {isLastMessageUser && <MessageLoading />}
