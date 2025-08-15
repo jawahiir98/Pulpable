@@ -28,14 +28,14 @@ export const MessagesContainer = ({
     )
   );
 
-  useEffect(() => {
-    const lastAssistantMessage = messages.findLast(
-      (message) => message.role === 'ASSISTANT' && !!message.fragment
-    );
-    if (lastAssistantMessage && lastAssistantMessage.fragment) {
-      setActiveFragment(lastAssistantMessage.fragment);
-    }
-  }, [messages, setActiveFragment]);
+  // useEffect(() => {
+  //   const lastAssistantMessage = messages.findLast(
+  //     (message) => message.role === 'ASSISTANT' && !!message.fragment
+  //   );
+  //   if (lastAssistantMessage && lastAssistantMessage.fragment) {
+  //     setActiveFragment(lastAssistantMessage.fragment);
+  //   }
+  // }, [messages, setActiveFragment]);
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
