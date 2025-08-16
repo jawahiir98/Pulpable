@@ -120,7 +120,7 @@ const FragmentCard = ({
         isActiveFragment &&
           'bg-primary text-primary-foreground border-primary hover:bg-primary'
       )}
-      onClick={() => onFragmentClick}
+      onClick={() => onFragmentClick(fragment)}
     >
       <Code2Icon className={'size-4 mt-0.5'} />
       <div className="flex flex-col flex-1">

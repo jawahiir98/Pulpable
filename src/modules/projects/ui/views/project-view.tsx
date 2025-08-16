@@ -11,6 +11,7 @@ import {
 import { MessagesContainer } from '@/modules/projects/ui/components/messages-container';
 import { Fragment } from '@/generated/prisma';
 import { ProjectHeader } from '@/modules/projects/ui/components/project-header';
+import { FragmentWeb } from '@/modules/projects/ui/components/fragment-web';
 
 interface Props {
   projectId: string;
@@ -55,8 +56,7 @@ export const ProjectView = ({ projectId }: Props) => {
           minSize={50}
           className={'flex flex-col min-h-0'}
         >
-          todo
-          {/*{JSON.stringify(messages)}*/}
+          {activeFragment && <FragmentWeb data={activeFragment} />}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

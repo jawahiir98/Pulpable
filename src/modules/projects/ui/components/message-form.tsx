@@ -50,8 +50,11 @@ export const MessageForm = ({ projectId }: Props) => {
     })
   );
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await createMessage.mutateAsync({
+      value: values.value,
+      projectId,
+    });
   };
 
   const isPending = createMessage.isPending;
@@ -95,7 +98,7 @@ export const MessageForm = ({ projectId }: Props) => {
           <div className="text-[10px] text-muted-foreground font-mono">
             <kbd
               className={
-                'ml-auto pointer-events-noen inline-flex h-5 select-none items-center bg-muted px-1.5 font-mono font-medium text-muted-foreground border gap-1 text-[10px] '
+                'ml-auto pointer-events-none inline-flex h-5 select-none items-center bg-muted px-1.5 font-mono font-medium text-muted-foreground border gap-1 text-[10px] '
               }
             >
               <span>&#8984;</span> Enter
