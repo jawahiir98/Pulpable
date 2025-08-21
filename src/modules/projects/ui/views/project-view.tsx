@@ -1,8 +1,6 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { useTRPC } from '@/trpc/client';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -25,18 +23,6 @@ interface Props {
 export const ProjectView = ({ projectId }: Props) => {
   const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
   const [tabState, setTabState] = useState<'preview' | 'code'>('preview');
-
-  const trpc = useTRPC();
-  const { data: project } = useSuspenseQuery(
-    trpc.projects.getOne.queryOptions({
-      id: projectId,
-    })
-  );
-  const { data: messages } = useSuspenseQuery(
-    trpc.messages.getMany.queryOptions({
-      projectId: projectId,
-    })
-  );
   return (
     <div className={'h-screen'}>
       <ResizablePanelGroup direction={'horizontal'}>
@@ -56,7 +42,7 @@ export const ProjectView = ({ projectId }: Props) => {
             />
           </Suspense>
         </ResizablePanel>
-        <ResizableHandle withHandle={true} />
+        <ResizableHandle className={'hover:bg-primary transition-colors'} />
         <ResizablePanel
           defaultSize={65}
           minSize={50}
