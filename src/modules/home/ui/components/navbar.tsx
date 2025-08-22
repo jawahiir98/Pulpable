@@ -2,14 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from '@clerk/nextjs';
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
+import { UserControl } from '@/components/user-control';
 
 export const Navbar = () => {
   return (
@@ -34,7 +29,7 @@ export const Navbar = () => {
           </div>
         </SignedOut>
         <SignedIn>
-          <UserButton showName />
+          <UserControl showName />
         </SignedIn>
       </div>
     </nav>

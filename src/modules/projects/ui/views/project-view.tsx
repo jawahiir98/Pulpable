@@ -15,6 +15,7 @@ import { ProjectHeader } from '@/modules/projects/ui/components/project-header';
 import { FragmentWeb } from '@/modules/projects/ui/components/fragment-web';
 import { EyeIcon, CodeIcon, CrownIcon } from 'lucide-react';
 import { FileExplorer } from '@/components/file-explorer';
+import { UserControl } from '@/components/user-control';
 
 interface Props {
   projectId: string;
@@ -69,6 +70,7 @@ export const ProjectView = ({ projectId }: Props) => {
                     <CrownIcon /> Upgrade
                   </Link>
                 </Button>
+                <UserControl />
               </div>
             </div>
             <TabsContent value={'preview'}>
