@@ -40,13 +40,13 @@ export const ProjectForm = () => {
     trpc.projects.create.mutationOptions({
       onSuccess: (data) => {
         form.reset();
+        queryClient.invalidateQueries(trpc.projects.getMany.queryOptions());
         queryClient
-          .invalidateQueries(trpc.projects.getMany.queryOptions())
+          .invalidateQueries(trpc.usage.status.queryOptions())
           .then(() => router.push(`/projects/${data.id}`));
       },
-      //     TODO: Invalidate usage status
       onError: (err) => {
-        // TODO: Redirect to pricing page if specific error...
+        if (err.data?.code === 'TOO_MANY_REQUESTS') router.push('/pricing');
         if (err.data?.code === 'UNAUTHORIZED') {
           clerk.openSignIn();
         } else {
