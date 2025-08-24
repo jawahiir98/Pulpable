@@ -53,4 +53,11 @@ model Project {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   messages  Message[]
+  userId    String
+}
+
+model Usage {
+  key    String    @id
+  points Int
+  expire DateTime?
 }
