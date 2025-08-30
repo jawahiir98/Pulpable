@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 export default tseslint.config(
-  { ignores: ['dist'] }, // Ignore build output folder
+  { ignores: ['dist', '**/generated/*'] }, // Ignore build output folder
   {
     extends: [
       js.configs.recommended, // Recommended JavaScript rules
