@@ -17,7 +17,6 @@ import {
 import { z } from 'zod';
 import { PROMPT, FRAGMENT_TITLE_PROMPT, RESPONSE_PROMPT } from '@/prompt';
 import { SANDBOX_TIMEOUT } from '@/inngest/types';
-import { prisma } from '@/lib/db';
 
 interface AgentState {
   summary: string;
@@ -80,27 +79,37 @@ export const codeAgentFunction = inngest.createFunction(
       tools: [
         createTool({
           name: 'terminal',
-          description: 'User the terminal to run commands',
+          description: 'Use the terminal to run commands',
           parameters: z.object({
             command: z.string(),
           }),
           handler: async ({ command }, { step }) => {
-            return await step?.run('terminal', async () => {
-              const buffers = { stdout: '', stderr: '' };
-              try {
-                const sandbox = await getSandbox(sandboxId);
-                const result = await sandbox.commands.run(command, {
-                  onStdout: (data: string) => (buffers.stdout += data),
-                  onStderr: (data: string) => (buffers.stderr += data),
-                });
-                return result.stdout;
-              } catch (e) {
-                console.log(
-                  `Command failed: ${e} \nstdout:: ${buffers.stdout} \nstderr: ${buffers.stderr}`
-                );
-                return `Command failed: ${e} \nstdout: ${buffers.stdout} \nstderr: ${buffers.stderr}`;
-              }
-            });
+            const buffers = { stdout: '', stderr: '' };
+            try {
+              const result = await step?.run(
+                'Running Terminal Command',
+                async () => {
+                  const sandbox = await getSandbox(sandboxId);
+                  return await sandbox.commands.run(command, {
+                    onStdout: (data: string) => {
+                      buffers.stdout += data;
+                    },
+                    onStderr: (data: string) => {
+                      buffers.stderr += data;
+                    },
+                  });
+                }
+              );
+
+              if (result) return result.stdout;
+
+              return 'Nothing here';
+            } catch (err) {
+              console.log(
+                `Command failed: ${err} \nstdout: ${buffers.stdout} \nstderr: ${buffers.stderr}`
+              );
+              return `Command failed: ${err} \nstdout: ${buffers.stdout} \nstderr: ${buffers.stderr}`;
+            }
           },
         }),
         createTool({
@@ -116,13 +125,14 @@ export const codeAgentFunction = inngest.createFunction(
           }),
           handler: async (
             { files },
-            { step, network }: Tool.Options<AgentState>
+            { network, step }: Tool.Options<AgentState>
           ) => {
-            const newFiles = await step?.run(
-              'createOrUpdateFiles',
-              async () => {
-                try {
-                  const updatedFiles = network.state.data.files ?? {};
+            try {
+              const updatedFiles = await step?.run(
+                'Writing Files',
+                async () => {
+                  const updatedFiles = network.state.data.files || {};
+
                   const sandbox = await getSandbox(sandboxId);
                   for (const file of files) {
                     await sandbox.files.write(file.path, file.content);
@@ -130,39 +140,44 @@ export const codeAgentFunction = inngest.createFunction(
                   }
 
                   return updatedFiles;
-                } catch (e) {
-                  return 'Error: ' + e;
                 }
+              );
+
+              if (updatedFiles) {
+                network.state.data.files = updatedFiles;
               }
-            );
-            if (typeof newFiles === 'object') {
-              network.state.data.files = newFiles;
+
+              return 'Files created/updated successfully';
+            } catch (e) {
+              return 'Error: ' + e;
             }
           },
         }),
         createTool({
           name: 'readFiles',
-          description: 'Read files from the sandbox',
+          description: 'Read files from sandbox',
           parameters: z.object({
             files: z.array(z.string()),
           }),
           handler: async ({ files }, { step }) => {
-            return await step?.run('readFiles', async () => {
-              try {
+            try {
+              await step?.run('Reading Files', async () => {
                 const sandbox = await getSandbox(sandboxId);
+                console.log('Running readFiles');
                 const contents = [];
                 for (const file of files) {
                   const content = await sandbox.files.read(file);
-                  contents.push(content);
+                  contents.push({ path: file, content });
                 }
                 return JSON.stringify(contents);
-              } catch (e) {
-                return 'Error: ' + e;
-              }
-            });
+              });
+            } catch (err) {
+              return 'Error: ' + err;
+            }
           },
         }),
       ],
+
       lifecycle: {
         onResponse: async ({ result, network }) => {
           const lastAssistantMessageText =
