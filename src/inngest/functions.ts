@@ -80,7 +80,7 @@ export const codeAgentFunction = inngest.createFunction(
       tools: [
         createTool({
           name: 'terminal',
-          description: 'User the terminal to run commands',
+          description: 'Use the terminal to run commands',
           parameters: z.object({
             command: z.string(),
           }),
@@ -114,10 +114,7 @@ export const codeAgentFunction = inngest.createFunction(
               })
             ),
           }),
-          handler: async (
-            { files },
-            { step, network }: Tool.Options<AgentState>
-          ) => {
+          handler: async ({ files }, { step, network }) => {
             const newFiles = await step?.run(
               'createOrUpdateFiles',
               async () => {
