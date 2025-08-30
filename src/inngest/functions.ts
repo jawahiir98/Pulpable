@@ -16,6 +16,7 @@ import {
 } from '@/inngest/utils';
 import { z } from 'zod';
 import { PROMPT, FRAGMENT_TITLE_PROMPT, RESPONSE_PROMPT } from '@/prompt';
+import { SANDBOX_TIMEOUT } from '@/inngest/types';
 
 interface AgentState {
   summary: string;
@@ -28,6 +29,7 @@ export const codeAgentFunction = inngest.createFunction(
   async ({ event, step }) => {
     const sandboxId = await step.run('get-sandbox-id', async () => {
       const sandbox = await Sandbox.create('pulpable-nextjs-dev');
+      await sandbox.setTimeout(SANDBOX_TIMEOUT);
       return sandbox.sandboxId;
     });
 
@@ -42,6 +44,7 @@ export const codeAgentFunction = inngest.createFunction(
           orderBy: {
             createdAt: 'desc',
           },
+          take: 5,
         });
 
         for (const message of messages) {
@@ -51,7 +54,7 @@ export const codeAgentFunction = inngest.createFunction(
             content: message.content,
           });
         }
-        return formattedMessages;
+        return formattedMessages.reverse();
       }
     );
 
