@@ -246,7 +246,7 @@ export const codeAgentFunction = inngest.createFunction(
 
     await step.run('save-result', async () => {
       if (isError) {
-        return await primsa.message.create({
+        return await prisma.message.create({
           data: {
             projectId: event.data.projectId,
             content: 'Something went wrong. Please try again.',
