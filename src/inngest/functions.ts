@@ -1,44 +1,49 @@
+import { z } from 'zod';
 import { inngest } from './client';
 import {
-  openai,
   createAgent,
-  createTool,
   createNetwork,
   createState,
-  type Tool,
+  createTool,
   type Message,
+  openai,
+  type Tool,
 } from '@inngest/agent-kit';
-import Sandbox from '@e2b/code-interpreter';
+import { Sandbox } from '@e2b/code-interpreter';
 import {
   getSandbox,
   lastAssistantTextMessageContent,
   parseOutput,
-} from '@/inngest/utils';
-import { z } from 'zod';
-import { PROMPT, FRAGMENT_TITLE_PROMPT, RESPONSE_PROMPT } from '@/prompt';
-import { SANDBOX_TIMEOUT } from '@/inngest/types';
-import { prisma } from '@/lib/db';
-
+} from './utils';
+import { FRAGMENT_TITLE_PROMPT, PROMPT, RESPONSE_PROMPT } from '@//prompt';
+import { prisma as db } from '@/lib/db';
+import { MessageRole, MessageType } from '@/generated/prisma';
 interface AgentState {
   summary: string;
-  files: { [path: string]: string };
+  files: {
+    [path: string]: string;
+  };
 }
 
 export const codeAgentFunction = inngest.createFunction(
   { id: 'code-agent' },
   { event: 'code-agent/run' },
   async ({ event, step }) => {
+    const currentPlan = event.data.plan;
     const sandboxId = await step.run('get-sandbox-id', async () => {
       const sandbox = await Sandbox.create('pulpable-nextjs-dev');
-      await sandbox.setTimeout(SANDBOX_TIMEOUT);
+      await sandbox.setTimeout(
+        currentPlan === 'pro' ? 1000 * 60 * 10 : 1000 * 60 * 5
+      );
       return sandbox.sandboxId;
     });
 
     const previousMessages = await step.run(
-      'get-previous-messages',
+      'get-previous-message',
       async () => {
-        const formattedMessages: Message[] = [];
-        const messages = await prisma.message.findMany({
+        const formattedMessage: Message[] = [];
+
+        const messages = await db.message.findMany({
           where: {
             projectId: event.data.projectId,
           },
@@ -49,13 +54,40 @@ export const codeAgentFunction = inngest.createFunction(
         });
 
         for (const message of messages) {
-          formattedMessages.push({
+          formattedMessage.push({
             type: 'text',
-            role: message.role === 'ASSISTANT' ? 'assistant' : 'user',
-            content: message.content,
+            role: message.role === MessageRole.ASSISTANT ? 'assistant' : 'user',
+            content: JSON.stringify({
+              content: message.content,
+              timeStamp: message.createdAt,
+            }),
           });
         }
-        return formattedMessages.reverse();
+
+        const mostRecentFragment = await db.fragment.findFirst({
+          where: {
+            message: {
+              projectId: event.data.projectId,
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          include: {
+            message: true,
+          },
+        });
+
+        formattedMessage.unshift({
+          type: 'text',
+          role: 'user',
+          content: JSON.stringify({
+            label: 'Final File Edits',
+            files: mostRecentFragment?.files,
+          }),
+        });
+
+        return formattedMessage;
       }
     );
 
@@ -68,14 +100,18 @@ export const codeAgentFunction = inngest.createFunction(
         messages: previousMessages,
       }
     );
-
+    // Create a new agent with a system prompt (you can add optional tools, too)
+    // const result = await step.run("generating-code", async () => {
     const codeAgent = createAgent<AgentState>({
       name: 'code-agent',
-      description: 'An expert coding agent',
+      description:
+        'a senior software engineer working in a sandboxed Next.js 15.3.4 environment',
       system: PROMPT,
       model: openai({
         model: 'gpt-4.1',
-        defaultParameters: { temperature: 0.1 },
+        defaultParameters: {
+          temperature: 0.1,
+        },
       }),
       tools: [
         createTool({
@@ -87,17 +123,20 @@ export const codeAgentFunction = inngest.createFunction(
           handler: async ({ command }, { step }) => {
             const buffers = { stdout: '', stderr: '' };
             try {
-              const result = await step?.run('Run terminal', async () => {
-                const sandbox = await getSandbox(sandboxId);
-                return await sandbox.commands.run(command, {
-                  onStdout: (data: string) => {
-                    buffers.stdout += data;
-                  },
-                  onStderr: (data: string) => {
-                    buffers.stderr += data;
-                  },
-                });
-              });
+              const result = await step?.run(
+                'Running Terminal Command',
+                async () => {
+                  const sandbox = await getSandbox(sandboxId);
+                  return await sandbox.commands.run(command, {
+                    onStdout: (data: string) => {
+                      buffers.stdout += data;
+                    },
+                    onStderr: (data: string) => {
+                      buffers.stderr += data;
+                    },
+                  });
+                }
+              );
 
               if (result) return result.stdout;
 
@@ -174,11 +213,11 @@ export const codeAgentFunction = inngest.createFunction(
           },
         }),
       ],
+
       lifecycle: {
         onResponse: async ({ result, network }) => {
           const lastAssistantMessageText =
             lastAssistantTextMessageContent(result);
-
           if (lastAssistantMessageText && network) {
             if (lastAssistantMessageText.includes('<task_summary>')) {
               network.state.data.summary = lastAssistantMessageText;
@@ -190,20 +229,23 @@ export const codeAgentFunction = inngest.createFunction(
     });
 
     const network = createNetwork<AgentState>({
-      name: 'codingAgentNetwork',
+      name: 'coding-agent-network',
       agents: [codeAgent],
       maxIter: 15,
       defaultState: state,
       router: async ({ network }) => {
         const summary = network.state.data.summary;
-        if (summary) return;
+
+        if (summary) {
+          return;
+        }
+
         return codeAgent;
       },
     });
 
-    const result = await network.run(event.data.value, {
-      state,
-    });
+    // const result = await step.run("run-network", async () => {
+    const result = await network.run(event.data.value, { state });
 
     const fragmentTitleGenerator = createAgent({
       name: 'fragment-title-generator',
@@ -213,7 +255,6 @@ export const codeAgentFunction = inngest.createFunction(
         model: 'gpt-4o',
       }),
     });
-
     const responseGenerator = createAgent({
       name: 'response-generator',
       description: 'A response generator',
@@ -222,6 +263,7 @@ export const codeAgentFunction = inngest.createFunction(
         model: 'gpt-4o',
       }),
     });
+    // });
 
     const { output: fragmentTitleOutput } = await fragmentTitleGenerator.run(
       result.state.data.summary
@@ -234,32 +276,34 @@ export const codeAgentFunction = inngest.createFunction(
       !result.state.data.summary ||
       Object.keys(result.state.data.files || {}).length === 0;
 
-    const sandboxUrl = await step.run('get-sandbox-url', async () => {
+    const sandboxURL = await step.run('get-sandbox-url', async () => {
       const sandbox = await getSandbox(sandboxId);
       const host = sandbox.getHost(3000);
       return `https://${host}`;
     });
 
-    await step.run('save-result', async () => {
+    await step.run('Saving Results', async () => {
       if (isError) {
-        return await primsa.message.create({
+        return await db.message.create({
           data: {
+            content: 'Something went wrong please try again later',
+            role: MessageRole.ASSISTANT,
+            type: MessageType.ERROR,
             projectId: event.data.projectId,
-            content: 'Something went wrong. Please try again.',
-            role: 'ASSISTANT',
-            type: 'ERROR',
+            userId: event.data.userId,
           },
         });
       }
-      return await prisma.message.create({
+      return await db.message.create({
         data: {
-          projectId: event.data.projectId,
+          userId: event.data.userId,
           content: parseOutput(responseOutput),
-          role: 'ASSISTANT',
-          type: 'RESULT',
+          role: MessageRole.ASSISTANT,
+          type: MessageType.RESULT,
+          projectId: event.data.projectId,
           fragment: {
             create: {
-              sandboxUrl: sandboxUrl,
+              sandboxUrl: sandboxURL,
               title: parseOutput(fragmentTitleOutput),
               files: result.state.data.files,
             },
@@ -267,9 +311,8 @@ export const codeAgentFunction = inngest.createFunction(
         },
       });
     });
-
     return {
-      url: sandboxUrl,
+      url: sandboxURL,
       title: 'Fragment',
       files: result.state.data.files,
       summary: result.state.data.summary,
