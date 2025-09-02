@@ -15,6 +15,7 @@ import {
   parseOutput,
 } from '@/inngest/utils';
 import { z } from 'zod';
+import { prisma } from '@/lib/db';
 import { PROMPT, FRAGMENT_TITLE_PROMPT, RESPONSE_PROMPT } from '@/prompt';
 import { SANDBOX_TIMEOUT } from '@/inngest/types';
 
@@ -246,7 +247,7 @@ export const codeAgentFunction = inngest.createFunction(
 
     await step.run('save-result', async () => {
       if (isError) {
-        return await primsa.message.create({
+        return await prisma.message.create({
           data: {
             projectId: event.data.projectId,
             content: 'Something went wrong. Please try again.',
