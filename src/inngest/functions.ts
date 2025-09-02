@@ -15,6 +15,7 @@ import {
   parseOutput,
 } from '@/inngest/utils';
 import { z } from 'zod';
+import { prisma } from '@/lib/db';
 import { PROMPT, FRAGMENT_TITLE_PROMPT, RESPONSE_PROMPT } from '@/prompt';
 import { SANDBOX_TIMEOUT } from '@/inngest/types';
 
